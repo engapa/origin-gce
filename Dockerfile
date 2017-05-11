@@ -28,7 +28,8 @@ LABEL io.k8s.display-name="OpenShift GCE Install Environment" \
 
 ENV WORK=/usr/share/ansible/openshift-ansible-gce \
     HOME=/home/cloud-user \
-    GOOGLE_CLOUD_SDK_VERSION=147.0.0 \
+    GOOGLE_CLOUD_SDK_VERSION=154.0.1 \
+    GCE_INVENTORY_VERSION=stable-2.3 \
     OPENSHIFT_ANSIBLE_TAG=master \
     ANSIBLE_JUNIT_DIR=/tmp/openshift/ansible_junit
 
@@ -47,10 +48,11 @@ RUN mkdir -p /usr/share/ansible $HOME/.ssh $WORK/playbooks/files && \
     yum install -y ansible && \
     yum clean all && \
     cd /usr/share/ansible && \
-    git clone https://github.com/openshift/openshift-ansible.git && \
-    cd openshift-ansible && \
-    git checkout ${OPENSHIFT_ANSIBLE_TAG} && \
+    git clone -b ${OPENSHIFT_ANSIBLE_TAG} https://github.com/openshift/openshift-ansible.git && \
     cd $HOME && \
+    mkdir -p inventory/gce/hosts && \
+    curl -sS https://raw.githubusercontent.com/ansible/ansible/${GCE_INVENTORY_VERSION}/contrib/inventory/gce.py > inventory/gce/hosts/gce.py && \
+    chmod 775 inventory/gce/hosts/gce.py && \
     curl -sSL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz | tar -xzf - && \
     ./google-cloud-sdk/bin/gcloud -q components update && \
     ./google-cloud-sdk/bin/gcloud -q components install beta && \
