@@ -151,6 +151,16 @@ done
 ( teardown "{{ provision_prefix }}ig-n" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
 ( teardown "{{ provision_prefix }}ig-i" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
 
+# Instance with GPUs
+(
+if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_instance_group_size_node_gpu }}" != "0" ]]; then
+  for i in $(seq 1 "{{ provision_gce_instance_group_size_node_gpu }}"); do
+    teardown "{{ provision_prefix }}-node-gpu-${i}" compute instances --zone "{{ gce_zone_name }}"
+  done
+fi
+) &
+
+
 for i in `jobs -p`; do wait $i; done
 
 # Instance templates
