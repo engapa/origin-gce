@@ -26,6 +26,12 @@
         - service: master http proxy
           port: 8080/tcp
 
+- hosts: schedulable_nodes
+  tasks:
+  - name: Set shcedulable nodes
+    set_fact:
+      openshift_schedulable: True
+
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
 - hosts: primary_master
