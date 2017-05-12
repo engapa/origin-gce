@@ -6,7 +6,7 @@
   template: src=provision.j2.sh dest=/tmp/provision.sh mode=u+rx
 
 - name: Templatize gpu provision script
-  template: src=gpu.j2.sh dest=/tmp/gpu.sh mode=u+r
+  template: src=startup_gpu.j2.sh dest=/tmp/gpu.sh mode=u+r
 
 - name: Provision GCE DNS domain
   command: /tmp/dns.sh
