@@ -52,7 +52,7 @@ RUN mkdir -p /usr/share/ansible $HOME/.ssh $WORK/playbooks/files && \
     cd $HOME && \
     mkdir -p $WORK/inventory/gce/hosts && \
     curl -sS https://raw.githubusercontent.com/ansible/ansible/${GCE_INVENTORY_VERSION}/contrib/inventory/gce.py > $WORK/inventory/gce/hosts/gce.py && \
-    chmod 775 inventory/gce/hosts/gce.py && \
+    chmod 775 $WORK/inventory/gce/hosts/gce.py && \
     curl -sSL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz | tar -xzf - && \
     ./google-cloud-sdk/bin/gcloud -q components update && \
     ./google-cloud-sdk/bin/gcloud -q components install beta && \
