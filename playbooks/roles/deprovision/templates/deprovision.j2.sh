@@ -161,6 +161,7 @@ for i in `jobs -p`; do wait $i; done
 ( teardown "{{ provision_prefix }}instance-template-master" compute instance-templates ) &
 ( teardown "{{ provision_prefix }}instance-template-node" compute instance-templates ) &
 ( teardown "{{ provision_prefix }}instance-template-node-infra" compute instance-templates ) &
+( teardown "{{ provision_prefix }}instance-template-node-gpu" compute instance-templates ) &
 
 # Firewall rules
 # ['name']='parameters for "gcloud compute firewall-rules create"'
