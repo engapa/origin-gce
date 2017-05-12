@@ -32,6 +32,10 @@
     set_fact:
       openshift_schedulable: True
 
+- hosts: app_nodes_gpu
+  roles:
+  - openshift-gpu
+
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
 - hosts: primary_master
