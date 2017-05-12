@@ -32,10 +32,6 @@
     set_fact:
       openshift_schedulable: True
 
-- hosts: app_nodes_gpu
-  roles:
-  - openshift-gpu
-
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
 - hosts: primary_master
@@ -64,6 +60,10 @@
   gather_facts: no
   roles:
     - openshift-emptydir-quota
+
+- hosts: app_nodes_gpu
+  roles:
+    - openshift-gpu
 
 - hosts: primary_master
   gather_facts: no
