@@ -50,8 +50,8 @@ RUN mkdir -p /usr/share/ansible $HOME/.ssh $WORK/playbooks/files && \
     cd /usr/share/ansible && \
     git clone -b ${OPENSHIFT_ANSIBLE_TAG} https://github.com/openshift/openshift-ansible.git && \
     cd $HOME && \
-    mkdir -p inventory/gce/hosts && \
-    curl -sS https://raw.githubusercontent.com/ansible/ansible/${GCE_INVENTORY_VERSION}/contrib/inventory/gce.py > inventory/gce/hosts/gce.py && \
+    mkdir -p $WORK/inventory/gce/hosts && \
+    curl -sS https://raw.githubusercontent.com/ansible/ansible/${GCE_INVENTORY_VERSION}/contrib/inventory/gce.py > $WORK/inventory/gce/hosts/gce.py && \
     chmod 775 inventory/gce/hosts/gce.py && \
     curl -sSL https://dl.google.com/dl/cloudsdk/channels/rapid/downloads/google-cloud-sdk-${GOOGLE_CLOUD_SDK_VERSION}-linux-x86_64.tar.gz | tar -xzf - && \
     ./google-cloud-sdk/bin/gcloud -q components update && \
