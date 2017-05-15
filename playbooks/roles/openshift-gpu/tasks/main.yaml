@@ -3,4 +3,4 @@
   vars:
   - openshift_node_kubelet_args:
       experimental-nvidia-gpus:
-      - '{{ provision_gce_node_gpu_size | default(1) }}'
+      - "{{ provision_gce_node_gpu_size | default(1) }}"
