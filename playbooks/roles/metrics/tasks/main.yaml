@@ -1,5 +1,0 @@
----
-- name: Ensure httpd-tools
-  package: name=httpd-tools state=present
-- name: Ensure java and keytool
-  package: name=java-1.8.0-openjdk-headless state=present
