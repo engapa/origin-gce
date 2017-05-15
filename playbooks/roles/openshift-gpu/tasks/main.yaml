@@ -1,4 +1,6 @@
 ---
 - name: Add GPU entry for kubelet
-  set_fact:
-  - openshift.node.kubelet_args['experimental-nvidia-gpus']: "['{{ provision_gce_node_gpu_size | default(1) }}']"
+  vars:
+    openshift_node_kubelet_args:
+      experimental-nvidia-gpus:
+      - '{{ provision_gce_node_gpu_size | default(1) }}'
