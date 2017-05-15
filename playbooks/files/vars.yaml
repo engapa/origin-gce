@@ -119,3 +119,18 @@ provision_gce_router_network_instance_group: ig-i # or: ig-m
 provision_gce_startup_script_file:
 # Provide userdata to the gce instances
 provision_gce_user_data_file:
+
+# Monitoring
+
+openshift_hosted_metrics_deploy: true
+openshift_hosted_metrics_storage_kind: dynamic
+openshift_hosted_metrics_public_url: "https://hawkular-metrics.{{ wildcard_zone }}/hawkular/metrics"
+
+# Logging
+
+# openshift_hosted_logging_deploy: true
+# openshift_hosted_logging_storage_kind: dynamic
+# openshift_hosted_logging_hostname: "logging.{{ wildcard_zone }}"
+# openshift_hosted_logging_elasticsearch_cluster_size: 1
+# openshift_hosted_logging_deployer_prefix: docker.io/openshift/origin-
+# openshift_hosted_logging_deployer_version: 3.6.0
