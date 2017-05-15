@@ -39,7 +39,7 @@
 - hosts: nodes
   roles:
   - role: metrics
-  when: openshift_hosted_metrics_deploy | default(false) | bool
+    when: openshift_hosted_metrics_deploy | default(false) | bool
 
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
