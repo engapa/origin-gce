@@ -70,6 +70,7 @@
   roles:
     - openshift-registry
     - openshift-roles
+    - openshift-projects
 
 - hosts: masters
   gather_facts: no

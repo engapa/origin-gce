@@ -35,6 +35,15 @@ openshift_master_identity_providers: "{{ (lookup('file', 'files/identity-provide
 # Set to empty array for no defaults.
 provision_role_mappings: [{'user': 'admin', 'role': 'cluster-admin'}]
 
+# Create new projects
+provision_project_mappings: >
+- name: gpu
+  # admin: admin
+  # admin_role: admin
+  # description: A new project
+  # display_name: myproject
+  node_selector: 'role=app-gpu'
+
 # Paths on the local system for the certificate files. If empty, self-signed
 # certificate will be generated.
 #provision_master_https_cert_file: "ssl.crt"
