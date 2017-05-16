@@ -1,0 +1,4 @@
+---
+- name: Create new projects
+  shell: oc adm new-project {{ item.name }} --admin='{{ item.admin|default('') }}' --admin-role='{{ item.admin_role|default('admin') }}' --description='{{ item.description|default('') }}' --display-name='{{ item.display_name|default('') }}' --node-selector='{{ item.node_selector|default('') }}'
+  with_items: "{{ provision_project_mappings | default([]) }}"
