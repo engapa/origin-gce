@@ -36,7 +36,7 @@ openshift_master_identity_providers: "{{ (lookup('file', 'files/identity-provide
 provision_role_mappings: [{'user': 'admin', 'role': 'cluster-admin'}]
 
 # Create new projects
-provision_project_mappings: >
+provision_project_mappings:
 - name: gpu
   # admin: admin
   # admin_role: admin
