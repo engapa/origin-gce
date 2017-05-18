@@ -69,6 +69,7 @@
   gather_facts: no
   roles:
     - openshift-registry
+    - openshift-users
     - openshift-roles
     - openshift-projects
 
