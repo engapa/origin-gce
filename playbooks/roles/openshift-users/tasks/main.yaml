@@ -3,5 +3,5 @@
   htpasswd: path={{ item.0.filename }} name={{ item.1.user }} password={{ item.1.passwd }}
   when: item.0.kind == 'HTPasswdPasswordIdentityProvider'
   with_subelements:
-    - openshift_master_identity_providers.items
-    - provision_htpasswd_user_mappings
+    - "{{ openshift_master_identity_providers.items | default([]) }}"
+    - "{{ provision_htpasswd_user_mappings | default([]) }}"
