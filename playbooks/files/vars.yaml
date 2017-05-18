@@ -29,11 +29,24 @@ openshift_node_port_range: 30000-32000
 
 # Authentication and authorization
 
-# By default reads the identity-providers.json file from the data directory (since identity providers often include secrets).
-openshift_master_identity_providers: "{{ (lookup('file', 'files/identity-providers.json' ) | default('{\"items\":[]}') | from_json).get('items') }}"
 # A set of initial roles to bootstrap the cluster with to bypass the need to copy the cluster-admin configuration file.
 # Set to empty array for no defaults.
 provision_role_mappings: [{'user': 'admin', 'role': 'cluster-admin'}]
+provision_htpasswd_user_mappings: [{'user': 'admin', 'passwd': 'admin'}]
+openshift_master_identity_providers:
+- name: Google
+  kind: GoogleIdentityProvider
+  login: true
+  challenge: false
+  mapping_method: claim
+  clientID: xxx-yyy.apps.googleusercontent.com
+  clientSecret: zzz
+  hostedDomain: example.comn
+- name: Local Auth
+  login: true
+  challenge: true
+  kind: HTPasswdPasswordIdentityProvider
+  filename: /etc/openshift/openshift-passwd
 
 # Create new projects
 provision_project_mappings:
