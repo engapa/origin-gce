@@ -164,8 +164,6 @@ openshift_hosted_metrics_public_url: "https://hawkular-metrics.{{ wildcard_zone 
 # Extensions for web console
 openshift_master_extensions: [{'name': 'images', 'sourceDirectory': '/etc/origin/master/images'}]
 openshift_master_oauth_templates:
-- name: login
-  sourceDirectory: '/etc/origin/master/login.html'
-- name: providerSelection
-  sourceDirectory: '/etc/origin/master/providerSelection.html'
+  login: '/etc/origin/master/login.html'
+  providerSelection: '/etc/origin/master/providerSelection.html'
 login_background_image: "../console/extensions/images/back_image.jpg"
