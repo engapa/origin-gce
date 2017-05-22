@@ -1,0 +1,10 @@
+---
+- name: Copy content of extensions
+  copy: src=files/{{ item.name }}/ dest={{ item.sourceDirectory }}
+  with_items:
+  - "{{ openshift_master_extensions | default([]) }}"
+
+- name: Login templates
+  template: src=templates/{{ item.name }}.j2 dest={{ item.sourceDirectory }}
+  with_items:
+  - "{{ openshift_master_oauth_templates | default ([]) }}"
