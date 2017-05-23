@@ -36,6 +36,11 @@
   roles:
   - openshift-gpu
 
+- hosts: primary_master
+  gather_facts: no
+  roles:
+    - openshift-extensions
+
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
 - hosts: primary_master
@@ -72,7 +77,6 @@
     - openshift-users
     - openshift-roles
     - openshift-projects
-    - openshift-extensions
 
 - hosts: masters
   gather_facts: no
