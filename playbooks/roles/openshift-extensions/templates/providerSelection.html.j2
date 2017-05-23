@@ -1,3 +1,4 @@
+#jinja2:variable_start_string:'[%' , variable_end_string:'%]'
 <!DOCTYPE html>
 <!--[if IE 8]><html class="ie8 login-pf"><![endif]-->
 <!--[if IE 9]><html class="ie9 login-pf"><![endif]-->
@@ -1838,7 +1839,8 @@ hr {
 }
 @media (min-width: 768px) {
   .login-pf {
-    background-image: url("{{ login_background_image }}");
+    background-image: url("[% login_background_image %]");
+    background-color: #1a1a1a;
     background-position: center;
     background-size: 100%;
   }
