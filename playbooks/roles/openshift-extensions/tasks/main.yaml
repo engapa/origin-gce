@@ -4,6 +4,6 @@
   with_items: "{{ openshift_master_extensions | default([]) }}"
 
 - name: Login templates
-  template: src={{ item }}.j2 dest={{ openshift_master_oauth_templates[item] }}
+  template: src={{ item }}.html.j2 dest={{ openshift_master_oauth_templates[item] }}
   with_items:
   - "{{ openshift_master_oauth_templates.keys() | default ([]) }}"
