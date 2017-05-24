@@ -5,8 +5,8 @@
   with_items: "{{ provision_project_mappings | default([]) }}"
 
 - name: Add users to project
-  shell: oc adm policy add-cluster-role-to-user {{ item.1.role }} {{ item.1.name }} -n {{ item.0.name }}
+  shell: oc adm policy add-role-to-user {{ item.1.role }} '{{ item.1.name }}' -n '{{ item.0.name }}'
   ignore_errors: true
   with_subelements:
   - "{{ provision_project_mappings | default([]) }}"
-  - "{{ users | default([]) }}"
+  - users

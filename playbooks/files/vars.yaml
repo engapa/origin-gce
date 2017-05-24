@@ -48,6 +48,12 @@ openshift_master_identity_providers:
   kind: HTPasswdPasswordIdentityProvider
   filename: /etc/openshift/openshift-passwd
 
+# Cluster role binding
+provision_cluster_role_binding_mappings:
+- group: 'system:authenticated:oauth'
+  #add-role: ['cluster-admin']
+  remove-role: ['self-provisioner']
+
 # Create new projects
 provision_project_mappings:
 - name: gpu
@@ -58,7 +64,7 @@ provision_project_mappings:
   node_selector: 'role=app-gpu'
   users:
   - {'name': 'enrique.garcia.pablos@bbva.com', 'role': 'admin'}
-  - {'name': 'leticia.garcia3@bbva.com', 'role': 'admin'}
+  - {'name': 'l.garcia.martin.contractor@bbva.com', 'role': 'admin'}
 
 # Paths on the local system for the certificate files. If empty, self-signed
 # certificate will be generated.

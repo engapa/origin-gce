@@ -1,0 +1,15 @@
+---
+- name: Add cluster role to groups
+  shell: oc adm policy add-cluster-role-to-group {{ item.1 }} {{ item.0.group }}
+  ignore_errors: true
+  with_subelements:
+  - "{{ provision_cluster_role_binding_mappings | default([]) }}"
+  - add-role
+
+
+- name: Remove cluster role from groups
+  shell: oc adm policy remove-cluster-role-from-group {{ item.1 }} {{ item.0.group }}
+  ignore_errors: true
+  with_subelements:
+  - "{{ provision_cluster_role_binding_mappings | default([]) }}"
+  - remove-role
