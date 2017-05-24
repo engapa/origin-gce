@@ -159,16 +159,17 @@ openshift_hosted_metrics_public_url: "https://hawkular-metrics.{{ wildcard_zone 
 
 # Logging
 
-#openshift_hosted_logging_deploy: true
-#openshift_hosted_logging_elasticsearch_pvc_dynamic: true
-#openshift_hosted_logging_hostname: "logging.{{ wildcard_zone }}"
-#openshift_hosted_logging_elasticsearch_cluster_size: 1
-#openshift_hosted_logging_master_public_url: "https://logging.{{ wildcard_zone }}:8443"
-#openshift_hosted_logging_deployer_prefix: docker.io/openshift/origin-
-#openshift_hosted_logging_deployer_version: 3.6.0
-#openshift_hosted_logging_elasticsearch_nodeselector: "role=infra"
-#openshift_hosted_logging_fluentd_nodeselector: "role=infra"
-#openshift_hosted_logging_curator_nodeselector: "role=infra"
+openshift_hosted_logging_deploy: true
+openshift_hosted_logging_elasticsearch_pvc_dynamic: true
+openshift_hosted_logging_elasticsearch_pvc_size: 50G
+openshift_hosted_logging_hostname: "logging.{{ wildcard_zone }}"
+openshift_hosted_logging_elasticsearch_cluster_size: 1
+openshift_hosted_logging_master_public_url: "https://{{ openshift_master_cluster_public_hostname }}"
+openshift_hosted_logging_deployer_prefix: docker.io/openshift/origin-
+openshift_hosted_logging_deployer_version: latest
+openshift_hosted_logging_elasticsearch_nodeselector: "role=infra"
+openshift_hosted_logging_fluentd_nodeselector: "role=infra"
+openshift_hosted_logging_curator_nodeselector: "role=infra"
 
 # Extensions for web console
 openshift_master_extensions: [{'name': 'images', 'sourceDirectory': '/usr/share/origin/images'}]
