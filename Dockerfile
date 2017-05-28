@@ -3,9 +3,7 @@
 #
 # It expects to have the following files mounted:
 #  - required:
-#    /usr/local/install/data/ansible-config.yml - an ansible config yaml containing all context info
 #    /usr/local/install/data/gce.json - the service account data for GCE in JSON format
-#    /usr/local/install/data/gce.pem - the service account data for GCE in PEM format
 #  - optional:
 #    /usr/local/install/data/ssh-publickey - the public key for SSH to GCE nodes, will be generated
 #    /usr/local/install/data/ssh-privatekey - the private key for SSH to GCE nodes, will be generated
