@@ -170,7 +170,7 @@ provision_gce_user_data_file:
 openshift_hosted_metrics_deploy: true
 openshift_hosted_metrics_storage_kind: dynamic
 openshift_hosted_metrics_public_url: "https://hawkular-metrics.{{ wildcard_zone }}/hawkular/metrics"
-top
+
 # Logging
 
 openshift_hosted_logging_deploy: true
