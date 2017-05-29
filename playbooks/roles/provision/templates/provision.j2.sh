@@ -158,7 +158,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
   if ! gcloud --project "{{ gce_project_id }}" compute instance-templates describe "{{ provision_prefix }}instance-template-node-gpu" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" beta compute instance-templates create "{{ provision_prefix }}instance-template-node-gpu" \
       --machine-type "{{ provision_gce_machine_type_node_gpu | default(provision_gce_machine_type_node)}}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" --image "${image}" \
+      --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" --image "${image}-gpu" \
       --boot-disk-size "25" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
       --metadata-from-file=startup-script=/tmp/gpu.sh --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \

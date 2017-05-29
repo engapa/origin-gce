@@ -149,8 +149,7 @@ provision_prefix: oso-
 # service load balancers.
 gce_network_name: "oso-ocp-network"
 
-# An image that is registered with the appropriate subscriptions (for RHEL) or
-# Red Hat.
+#Your image base
 provision_gce_registered_image: oso-instance
 
 # The name of a GCS bucket to create for the registry in the current project
