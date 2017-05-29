@@ -1564,7 +1564,7 @@ hr {
   }
 }
 .login-pf body {
-  background-color: #000000;
+  background-color: #1a1a1a;
   background-image: url(https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTfjhFI2JH1fP698134cjGZpjdVYOGjLD36tg6DDga5hUnp6U3K);
   background-size: auto;
 }
@@ -1837,12 +1837,13 @@ hr {
     text-align: center;
   }
 }
-@media (min-width: 768px) {
+@media {
   .login-pf {
     background-image: url("[% login_background_image %]");
+    background-repeat: no-repeat;
     background-color: #1a1a1a;
     background-position: center;
-    background-size: 100%;
+    background-size: cover;
   }
   .login-pf body {
     background-image: none;
