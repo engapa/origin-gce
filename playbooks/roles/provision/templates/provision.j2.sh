@@ -161,7 +161,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
       --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" --image "${image}-gpu" \
       --boot-disk-size "25" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
-      --metadata-from-file=startup-script=/tmp/gpu.sh --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
+      --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
       --maintenance-policy TERMINATE --restart-on-failure
   else
     echo "Instance template '{{ provision_prefix }}instance-template-node-gpu' already exists"
