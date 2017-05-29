@@ -78,6 +78,7 @@
     - openshift-roles
     - openshift-projects
     - openshift-clusterrolebindings
+    - openshift-scc
 
 - hosts: masters
   gather_facts: no

@@ -1,0 +1,12 @@
+---
+- name: Add privileged scc to user
+  shell: oc adm policy add-scc-to-user privileged '{{ item }}'
+  ignore_errors: true
+  with_items:
+  - "{{ provision_scc_mapping.privileged | default([]) }}"
+
+- name: Add restricted scc to user
+  shell: oc adm policy add-scc-to-user restricted '{{ item }}'
+  ignore_errors: true
+  with_items:
+  - "{{ provision_scc_mapping.restricted | default([]) }}"
