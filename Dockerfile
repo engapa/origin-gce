@@ -26,7 +26,7 @@ LABEL io.k8s.display-name="OpenShift GCE Install Environment" \
 
 ENV WORK=/usr/share/ansible/openshift-ansible-gce \
     HOME=/home/cloud-user \
-    GOOGLE_CLOUD_SDK_VERSION=154.0.1 \
+    GOOGLE_CLOUD_SDK_VERSION=156.0.0 \
     GCE_INVENTORY_VERSION=stable-2.3 \
     OPENSHIFT_ANSIBLE_TAG=master \
     ANSIBLE_JUNIT_DIR=/tmp/openshift/ansible_junit
