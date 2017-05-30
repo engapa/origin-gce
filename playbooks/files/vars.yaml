@@ -139,7 +139,7 @@ provision_gce_instance_group_size_node_gpu: 1
 
 # The size of disks attached to each node. The Docker disk is for images and containers, the OpenShift
 # disk is for empty dir volumes and local storage.
-provision_gce_disk_size_node_docker: 25
+provision_gce_disk_size_node_docker: 50
 provision_gce_disk_size_node_openshift: 50
 
 # Provision prefix is a common identifier placed at the beginning of ALL GCE resource names
