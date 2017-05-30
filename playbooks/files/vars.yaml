@@ -137,6 +137,12 @@ provision_gce_instance_group_size_node_infra: 1
 provision_gce_instance_group_size_node: 2
 provision_gce_instance_group_size_node_gpu: 1
 
+# Boot disks
+provision_gce_instance_group_size_master_boot_disk: 40
+provision_gce_instance_group_size_node_infra_boot_disk: 40
+provision_gce_instance_group_size_node_boot_disk: 40
+provision_gce_instance_group_size_node_gpu_boot_disk: 40
+
 # The size of disks attached to each node. The Docker disk is for images and containers, the OpenShift
 # disk is for empty dir volumes and local storage.
 provision_gce_disk_size_node_docker: 50
@@ -149,7 +155,8 @@ provision_prefix: oso-
 # service load balancers.
 gce_network_name: "oso-ocp-network"
 
-#Your image base
+# An image that is registered with the appropriate subscriptions (for RHEL) or
+# Red Hat.
 provision_gce_registered_image: oso-instance
 
 # The name of a GCS bucket to create for the registry in the current project
