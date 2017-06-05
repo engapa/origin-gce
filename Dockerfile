@@ -28,7 +28,7 @@ ENV WORK=/usr/share/ansible/openshift-ansible-gce \
     HOME=/home/cloud-user \
     GOOGLE_CLOUD_SDK_VERSION=157.0.0 \
     GCE_INVENTORY_VERSION=stable-2.3 \
-    OPENSHIFT_ANSIBLE_TAG=master \
+    OPENSHIFT_ANSIBLE_TAG=release-1.5 \
     ANSIBLE_JUNIT_DIR=/tmp/openshift/ansible_junit
 
 # meta refresh_inventory has a bug in 2.2.0 where it uses relative path
