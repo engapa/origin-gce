@@ -41,6 +41,16 @@
   roles:
     - openshift-extensions
 
+# Avoid multizone configuration override for gce provider
+- hosts: localhost
+  connection: local
+  tasks:
+  - name: Disable multizone configuration
+    replace:
+      path: /usr/share/ansible/openshift-ansible/playbooks/common/openshift-cluster/roles/openshift_cloud_provider/tasks/gce.yml
+      regexp: 'true'
+      replace: 'false'
+
 - include: /usr/share/ansible/openshift-ansible/playbooks/byo/config.yml
 
 - hosts: primary_master
