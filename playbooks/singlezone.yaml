@@ -1,0 +1,12 @@
+# Avoid multizone configuration override for gce provider
+- hosts: localhost
+  connection: local
+  tasks:
+  - name: Disable multizone configuration
+    replace:
+      path: "/usr/share/ansible/openshift-ansible/playbooks/{{ item | join('/') }}/roles/openshift_cloud_provider/tasks/gce.yml"
+      regexp: 'true'
+      replace: 'false'
+    with_nested:
+    - ['common', 'byo']
+    - ['openshift-cluster', 'openshift-master', 'openshift-node', 'openshift-etcd']

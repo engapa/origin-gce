@@ -33,4 +33,9 @@ fi
 
 gcloud auth activate-service-account --key-file="${WORK}/playbooks/files/gce.json"
 
+
+if [ "$MULTIZONE" == 'false' ]; then
+    ansible-playbook playbooks/singlezone.yaml
+fi
+
 exec "$@"
