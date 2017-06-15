@@ -26,7 +26,7 @@ LABEL io.k8s.display-name="OpenShift GCE Install Environment" \
 
 ENV WORK=/usr/share/ansible/openshift-ansible-gce \
     HOME=/home/cloud-user \
-    GOOGLE_CLOUD_SDK_VERSION=157.0.0 \
+    GOOGLE_CLOUD_SDK_VERSION=159.0.0 \
     GCE_INVENTORY_VERSION=stable-2.3 \
     OPENSHIFT_ANSIBLE_TAG=release-1.5 \
     MULTIZONE=false \
