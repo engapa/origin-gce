@@ -124,7 +124,7 @@ for i in `jobs -p`; do wait $i; done
 (
 if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}"
-    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged set-named-ports "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" --named-ports "{{ provision_prefix }}-port-name-master:{{ internal_console_port }}"
+    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged set-named-ports "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" --named-ports "{{ provision_prefix }}port-name-master:{{ internal_console_port }}"
 else
     echo "Instance group '{{ provision_prefix }}ig-m' already exists"
 fi
@@ -142,7 +142,7 @@ do
   else
     echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
   fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" --regexp "{{ provision_prefix }}ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
+  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
   ITER_MASTER=`expr $ITER_MASTER + 1`
 done
@@ -170,7 +170,7 @@ do
   else
     echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
   fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" --regexp ".*-${ITER_NODE}" | grep oso | wc -l) -eq '1' ] \
+  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
   ITER_NODE=`expr $ITER_NODE + 1`
 done
@@ -201,7 +201,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
     else
       echo "Instance '{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" --regexp ".*-${ITER_GPU_NODE}" | grep oso | wc -l) -eq '1' ] \
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
     ITER_GPU_NODE=`expr $ITER_GPU_NODE + 1`
   done
@@ -230,7 +230,7 @@ do
   else
     echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
   fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" --regexp ".*-${ITER_INFRA_NODE}" | grep oso | wc -l) -eq '1' ] \
+  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
   ITER_INFRA_NODE=`expr $ITER_INFRA_NODE + 1`
 done
@@ -382,11 +382,14 @@ fi
 for i in `jobs -p`; do wait $i; done
 
 # set the target pools
+master_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-m-*" | awk '{print $1}')
 if [[ "ig-m" == "{{ provision_gce_router_network_instance_group }}" ]]; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed set-target-pools "{{ provision_prefix }}ig-m" --target-pools "{{ provision_prefix }}master-network-lb-pool,{{ provision_prefix }}router-network-lb-pool" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}router-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
 else
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed set-target-pools "{{ provision_prefix }}ig-m" --target-pools "{{ provision_prefix }}master-network-lb-pool" --zone "{{ gce_zone_name }}"
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed set-target-pools "{{ provision_prefix }}{{ provision_gce_router_network_instance_group }}" --target-pools "{{ provision_prefix }}router-network-lb-pool" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  infra_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-*" | awk '{print $1}')
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}router-network-lb-pool" --instances=$(echo -n $infra_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
 fi
 
 # Retry DNS changes until they succeed since this may be a shared resource
