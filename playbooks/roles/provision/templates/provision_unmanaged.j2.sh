@@ -157,7 +157,8 @@ ITER_NODE=0
 while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node | default(0) }}" ]
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
+    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
+      --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
       --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" --image "${image}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}"
@@ -179,7 +180,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
   fi
 
   ITER_GPU_NODE=0
-  while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node_gpu | default(0) }}" ]
+  while [ $ITER_GPU_NODE -le "{{ provision_gce_instance_group_size_node_gpu | default(0) }}" ]
   do
     if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" &>/dev/null; then
       gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" \
