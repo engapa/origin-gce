@@ -26,9 +26,10 @@ LABEL io.k8s.display-name="OpenShift GCE Install Environment" \
 
 ENV WORK=/usr/share/ansible/openshift-ansible-gce \
     HOME=/home/cloud-user \
-    GOOGLE_CLOUD_SDK_VERSION=157.0.0 \
+    GOOGLE_CLOUD_SDK_VERSION=159.0.0 \
     GCE_INVENTORY_VERSION=stable-2.3 \
     OPENSHIFT_ANSIBLE_TAG=release-1.5 \
+    MULTIZONE=false \
     ANSIBLE_JUNIT_DIR=/tmp/openshift/ansible_junit
 
 # meta refresh_inventory has a bug in 2.2.0 where it uses relative path
@@ -64,9 +65,10 @@ RUN mkdir -p /usr/share/ansible $HOME/.ssh $WORK/playbooks/files && \
     chmod -R g+w /usr/share/ansible $HOME /etc/passwd
 
 WORKDIR $WORK
-ENTRYPOINT ["/usr/share/ansible/openshift-ansible-gce/entrypoint.sh"]
-CMD ["ansible-playbook", "playbooks/launch.yaml"]
 
 COPY . $WORK
 RUN chmod -R g+w $WORK
 USER 1000
+
+ENTRYPOINT ["/usr/share/ansible/openshift-ansible-gce/entrypoint.sh"]
+CMD ["ansible-playbook", "playbooks/launch.yaml"]

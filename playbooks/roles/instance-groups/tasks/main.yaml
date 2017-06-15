@@ -41,3 +41,9 @@
     openshift_node_labels:
       role: app-gpu
   with_items: "{{ groups['tag_ocp-node-gpu'] | default([])  }}"
+
+- name: New nodes
+  add_host:
+    name: "{{ item }}"
+    groups: nodes_to_add
+  with_items: "{{ groups['tag_ocp-node-to-add'] | default([])  }}"

@@ -33,6 +33,7 @@ openshift_node_port_range: 30000-32000
 # Set to empty array for no defaults.
 provision_role_mappings: [{'user': 'admin', 'role': 'cluster-admin'}]
 provision_htpasswd_user_mappings: [{'user': 'admin', 'passwd': 'admin'}]
+
 openshift_master_identity_providers:
 - name: Google
   kind: GoogleIdentityProvider
@@ -81,8 +82,6 @@ provision_project_mappings:
   - {'name': 'l.garcia.martin.contractor@bbva.com', 'role': 'admin' }
 
 openshift_default_projects:
-  default:
-    default_node_selector: 'role=app'
   logging:
     default_node_selector: 'role=infra'
   openshift-infra:
@@ -180,24 +179,17 @@ provision_gce_startup_script_file:
 provision_gce_user_data_file:
 
 # Monitoring
-
 openshift_hosted_metrics_deploy: true
 openshift_hosted_metrics_storage_kind: dynamic
-openshift_hosted_metrics_public_url: "https://hawkular-metrics.{{ wildcard_zone }}/hawkular/metrics"
+openshift_metrics_image_version: v1.5.1
 
 # Logging
-
-#openshift_hosted_logging_deploy: true
-#openshift_hosted_logging_elasticsearch_pvc_dynamic: true
-#openshift_hosted_logging_elasticsearch_pvc_size: 50G
-#openshift_hosted_logging_hostname: "logging.{{ wildcard_zone }}"
-#openshift_hosted_logging_elasticsearch_cluster_size: 1
-#openshift_hosted_logging_master_public_url: "https://{{ openshift_master_cluster_public_hostname }}"
-#openshift_hosted_logging_deployer_prefix: docker.io/openshift/origin-
-#openshift_hosted_logging_enable_ops_cluster: true
-#openshift_hosted_logging_deployer_version: latest
-#openshift_hosted_logging_elasticsearch_nodeselector: "role=infra"
-#openshift_hosted_logging_curator_nodeselector: "role=infra"
+openshift_hosted_logging_deploy: true
+openshift_hosted_logging_storage_kind: dynamic
+logging_elasticsearch_pvc_size: 50Gi
+#openshift_logging_use_ops: true
+#openshift_hosted_loggingops_storage_kind: dynamic
+#logging_elasticsearch_ops_pvc_size: 50Gi
 
 # Extensions for web console
 openshift_master_extensions: [{'name': 'images', 'sourceDirectory': '/usr/share/origin/images'}]
