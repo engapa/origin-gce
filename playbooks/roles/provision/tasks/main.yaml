@@ -3,7 +3,7 @@
   template: src=dns.j2.sh dest=/tmp/dns.sh mode=u+rx
 
 - name: Templatize provision script
-  template: src=provision.j2.sh dest=/tmp/provision.sh mode=u+rx
+  template: src=provision_{{ provision_gce_ig_type }}.j2.sh dest=/tmp/provision.sh mode=u+rx
 
 - name: Provision GCE DNS domain
   command: /tmp/dns.sh

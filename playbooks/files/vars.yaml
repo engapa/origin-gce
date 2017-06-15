@@ -139,6 +139,7 @@ provision_gce_node_gpu_size: 1
 
 # The instance sizes of each group. If node-infra is 0, you must set
 # provision_gce_router_network_instance_group to ig-m
+provision_gce_ig_type: unmanaged
 provision_gce_instance_group_size_master: 1
 provision_gce_instance_group_size_node_infra: 1
 provision_gce_instance_group_size_node: 2
