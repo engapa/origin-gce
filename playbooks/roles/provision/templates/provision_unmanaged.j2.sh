@@ -129,7 +129,7 @@ else
     echo "Instance group '{{ provision_prefix }}ig-m' already exists"
 fi
 
-ITER_MASTER=0
+ITER_MASTER=1
 while [ $ITER_MASTER -le "{{ provision_gce_instance_group_size_master | default(0) }}" ]
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-m-${ITER_MASTER}" &>/dev/null; then
@@ -157,7 +157,7 @@ else
     echo "Instance group '{{ provision_prefix }}ig-n' already exists"
 fi
 
-ITER_NODE=0
+ITER_NODE=1
 while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node | default(0) }}" ]
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" &>/dev/null; then
@@ -186,7 +186,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
     echo "Instance group '{{ provision_prefix }}ig-n-gpu' already exists"
   fi
 
-  ITER_GPU_NODE=0
+  ITER_GPU_NODE=1
   while [ $ITER_GPU_NODE -le "{{ provision_gce_instance_group_size_node_gpu | default(0) }}" ]
   do
     if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" &>/dev/null; then
@@ -217,7 +217,7 @@ else
   echo "Instance group '{{ provision_prefix }}ig-i' already exists"
 fi
 
-ITER_INFRA_NODE=0
+ITER_INFRA_NODE=1
 while [ $ITER_INFRA_NODE -le "{{ provision_gce_instance_group_size_node_infra | default(0) }}" ]
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" &>/dev/null; then
