@@ -132,25 +132,25 @@ fi
 ITER_MASTER=1
 while [ $ITER_MASTER -le "{{ provision_gce_instance_group_size_master | default(0) }}" ]
 do
-  if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-m-${ITER_MASTER}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-m-${ITER_MASTER}" \
-      --zone "{{ gce_zone_name }}" --image "${image}" \
-      --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
-      --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
-      --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-  else
-    echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
-  fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
-     || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
+  (
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-m-${ITER_MASTER}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-m-${ITER_MASTER}" \
+        --zone "{{ gce_zone_name }}" --image "${image}" \
+        --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
+        --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
+        --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
+        --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
+    else
+      echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
+    fi
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
+  ) &
   ITER_MASTER=`expr $ITER_MASTER + 1`
 done
-) &
 
 
 # Create node instance unmanaged group
-(
 if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}"
 else
@@ -160,25 +160,24 @@ fi
 ITER_NODE=1
 while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node | default(0) }}" ]
 do
-  if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
-      --zone "{{ gce_zone_name }}" --image "${image}" \
-      --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
-      --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
-      --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-  else
-    echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
-  fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
-     || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
+  (
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
+        --zone "{{ gce_zone_name }}" --image "${image}" \
+        --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
+        --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
+        --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
+        --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
+    else
+      echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
+    fi
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
+  ) &
   ITER_NODE=`expr $ITER_NODE + 1`
 done
-) &
-
 
 # Create gpu node instance unmanaged group
-(
 if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_instance_group_size_node_gpu }}" -ne '0' ]]; then
   if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}"
@@ -189,6 +188,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
   ITER_GPU_NODE=1
   while [ $ITER_GPU_NODE -le "{{ provision_gce_instance_group_size_node_gpu | default(0) }}" ]
   do
+    (
     if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
       gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_gpu | default(provision_gce_machine_type_node)}}" --network "{{ gce_network_name }}" \
@@ -203,14 +203,12 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
     fi
     [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
+    ) &
     ITER_GPU_NODE=`expr $ITER_GPU_NODE + 1`
   done
 fi
-) &
-
 
 # Create infra node instance unmanaged group
-(
 if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" &>/dev/null; then
   gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}"
 else
@@ -220,21 +218,22 @@ fi
 ITER_INFRA_NODE=1
 while [ $ITER_INFRA_NODE -le "{{ provision_gce_instance_group_size_node_infra | default(0) }}" ]
 do
-  if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" \
-      --machine-type "{{ provision_gce_machine_type_node_infra }}" --network "{{ gce_network_name }}" \
-      --zone "{{ gce_zone_name }}" --image "${image}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" \
-      --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
-      --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
-  else
-    echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
-  fi
-  [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
-     || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
+  (
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" \
+        --machine-type "{{ provision_gce_machine_type_node_infra }}" --network "{{ gce_network_name }}" \
+        --zone "{{ gce_zone_name }}" --image "${image}" \
+        --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" \
+        --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
+        --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
+    else
+      echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
+    fi
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
+  ) &
   ITER_INFRA_NODE=`expr $ITER_INFRA_NODE + 1`
 done
-) &
 
 for i in `jobs -p`; do wait $i; done
 
