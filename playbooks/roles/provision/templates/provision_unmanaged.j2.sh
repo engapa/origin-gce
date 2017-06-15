@@ -139,12 +139,12 @@ do
       --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" \
-      --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
   else
     echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
   fi
-  ITER_MASTER= $((ITER_MASTER + 1))
+  gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" \
+    --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
+  ITER_MASTER=`expr $ITER_MASTER + 1`
 done
 ) &
 
@@ -167,12 +167,12 @@ do
       --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" \
-      --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
   else
     echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
   fi
-  ITER_NODE= $((ITER_NODE + 1))
+  gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" \
+    --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
+  ITER_NODE=`expr $ITER_NODE + 1`
 done
 ) &
 
@@ -198,12 +198,12 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
         --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
         --maintenance-policy TERMINATE --restart-on-failure--machine-type
-      gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" \
-      --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
     else
       echo "Instance '{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}' already exists"
     fi
-    ITER_GPU_NODE= $((ITER_GPU_NODE + 1))
+    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" \
+      --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
+    ITER_GPU_NODE=`expr $ITER_GPU_NODE + 1`
   done
 fi
 ) &
@@ -232,7 +232,7 @@ do
   else
     echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
   fi
-  ITER_INFRA_NODE= $((ITER_INFRA_NODE + 1))
+  ITER_INFRA_NODE=`expr $ITER_INFRA_NODE + 1`
 done
 ) &
 
