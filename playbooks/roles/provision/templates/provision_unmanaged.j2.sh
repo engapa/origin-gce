@@ -139,7 +139,8 @@ do
       --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}"
+    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" \
+      --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
   else
     echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
   fi
@@ -166,7 +167,8 @@ do
       --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
-    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}"
+    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" \
+      --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
   else
     echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
   fi
@@ -196,7 +198,8 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
         --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
         --maintenance-policy TERMINATE --restart-on-failure--machine-type
-      gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}"
+      gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" \
+      --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
     else
       echo "Instance '{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}' already exists"
     fi
@@ -224,7 +227,8 @@ do
       --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
-      gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_GPU_NODE}"
+    gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" \
+      --instances "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
   else
     echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
   fi
