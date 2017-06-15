@@ -133,9 +133,12 @@ ITER_MASTER=0
 while [ $ITER_MASTER -le "{{ provision_gce_instance_group_size_master | default(0) }}" ]
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-m-${ITER_MASTER}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}instance-template-master" --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" --image "${image}" \
-      --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
+    gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}instance-template-master" \
+      --zone "{{ gce_zone_name }}" --image "${image}" \
+      --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
+      --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
+      --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
+      --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}"
   else
     echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
@@ -158,9 +161,11 @@ while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node | default(0) }
 do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
+      --zone "{{ gce_zone_name }}" --image "${image}" \
       --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" --image "${image}" \
-      --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
+      --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
+      --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
+      --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}"
   else
     echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
@@ -185,7 +190,8 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
     if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" &>/dev/null; then
       gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_gpu | default(provision_gce_machine_type_node)}}" --network "{{ gce_network_name }}" \
-        --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" --image "${image}-gpu" \
+        --zone "{{ gce_zone_name }}" --image "${image}-gpu" \
+        --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_gpu_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
         --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
@@ -214,7 +220,8 @@ do
   if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" \
       --machine-type "{{ provision_gce_machine_type_node_infra }}" --network "{{ gce_network_name }}" \
-      --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" --image "${image}" \
+      --zone "{{ gce_zone_name }}" --image "${image}" \
+      --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" \
       --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
       --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
       gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_GPU_NODE}"
