@@ -168,7 +168,7 @@ gce_network_name: "{{ provision_prefix }}-network"
 provision_gce_registered_image: oso-instance
 
 # The name of a GCS bucket to create for the registry in the current project
-provision_gce_registry_gcs_bucket: "{{ provision_prefix}}-registry-storage"
+provision_gce_registry_gcs_bucket: "{{ provision_prefix }}-registry-storage"
 
 # Control which node group router traffic is targeted at. You may set this to ig-m to point
 # to the master.
