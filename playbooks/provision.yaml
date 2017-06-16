@@ -1,0 +1,8 @@
+# This playbook launches a new cluster or converges it if already launched
+
+- name: Ensure all cloud resources necessary for the cluster, including instances, have been started
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  roles:
+    - provision
