@@ -1,6 +1,6 @@
 # This playbook launches a new cluster or converges it if already launched
 
-- include: provison.yaml
+- include: provision.yaml
 
 - name: Ensure all cloud resources necessary for the cluster, including instances, have been started
   hosts: localhost
