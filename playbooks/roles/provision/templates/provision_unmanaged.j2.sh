@@ -121,7 +121,6 @@ fi ) &
 for i in `jobs -p`; do wait $i; done
 
 # Create Master instance unmanaged group
-(
 if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" &>/dev/null; then
     gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}"
     gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged set-named-ports "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" --named-ports "{{ provision_prefix }}port-name-master:{{ internal_console_port }}"
