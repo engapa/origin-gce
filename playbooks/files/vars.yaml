@@ -158,17 +158,17 @@ provision_gce_disk_size_node_openshift: 50
 
 # Provision prefix is a common identifier placed at the beginning of ALL GCE resource names
 # to allow multiple clusters to be deployed in one GCE project.
-provision_prefix: oso-
+provision_prefix: oso-ml
 # Network name is a configuration parameter that is used by the cloud provider to provision
 # service load balancers.
-gce_network_name: "oso-ocp-network"
+gce_network_name: "{{ provision_prefix }}-network"
 
 # An image that is registered with the appropriate subscriptions (for RHEL) or
 # Red Hat.
 provision_gce_registered_image: oso-instance
 
 # The name of a GCS bucket to create for the registry in the current project
-provision_gce_registry_gcs_bucket: oso-registry-storage
+provision_gce_registry_gcs_bucket: "{{ provision_prefix}}-registry-storage"
 
 # Control which node group router traffic is targeted at. You may set this to ig-m to point
 # to the master.

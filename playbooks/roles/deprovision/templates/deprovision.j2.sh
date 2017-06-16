@@ -102,7 +102,7 @@ teardown "{{ provision_prefix }}master-ssl-lb-health-check" compute health-check
 ) &
 
 # Additional disks for instances for docker storage
-instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}ocp AND tags.items:ocp' --format='value(name)')
+instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}' --format='value(name)')
 for i in $instances; do
     (
     instance_zone=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter="name:${i}" --format='value(zone)')
@@ -139,7 +139,7 @@ fi
 
 # Delete the disks in parallel with instance operations. Ignore failures to avoid preventing other expensive resources from
 # being removed.
-instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}ocp AND tags.items:ocp' --format='value(name)')
+instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}' --format='value(name)')
 for i in $instances; do
     instance_zone=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter="name:${i}" --format='value(zone)')
     ( gcloud -q --project "{{ gce_project_id }}" compute disks delete "${i}-docker" --zone "$instance_zone" || true ) &

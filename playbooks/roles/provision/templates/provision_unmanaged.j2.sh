@@ -10,7 +10,7 @@ fi
 
 # Check if the ~/.ssh/google_compute_engine.pub key is in the project metadata, and if not, add it there
 pub_key=$(cut -d ' ' -f 2 < "{{ gce_ssh_private_key }}.pub")
-key_tmp_file='/tmp/ocp-gce-keys'
+key_tmp_file='/tmp/gce-keys'
 if ! gcloud --project "{{ gce_project_id }}" compute project-info describe | grep -q "$pub_key"; then
     if gcloud --project "{{ gce_project_id }}" compute project-info describe | grep -q ssh-rsa; then
         gcloud --project "{{ gce_project_id }}" compute project-info describe | grep ssh-rsa | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/value: //' > "$key_tmp_file"
@@ -80,11 +80,11 @@ declare -A FW_RULES=(
   ['icmp']='--allow icmp'
   ['ssh-external']='--allow tcp:22'
   ['ssh-internal']='--allow tcp:22 --source-tags bastion'
-  ['master-internal']="--allow tcp:1935,tcp:2224,tcp:2379,tcp:2380,tcp:4001,udp:4789,udp:5404,udp:5405,tcp:8053,udp:8053,tcp:8444,tcp:10250,tcp:10255,udp:10255,tcp:24224,udp:24224 --source-tags ocp --target-tags ocp-master"
-  ['master-external']="--allow tcp:80,tcp:443,tcp:1936,tcp:8080,tcp:8443${range} --target-tags ocp-master"
-  ['node-internal']="--allow tcp:1935,udp:4789,tcp:10250,tcp:10255,udp:10255 --source-tags ocp --target-tags ocp-node,ocp-infra-node"
-  ['infra-node-internal']="--allow tcp:1935,tcp:5000 --source-tags ocp --target-tags ocp-infra-node"
-  ['infra-node-external']="--allow tcp:80,tcp:443,tcp:1936${range} --target-tags ocp-infra-node"
+  ['master-internal']="--allow tcp:1935,tcp:2224,tcp:2379,tcp:2380,tcp:4001,udp:4789,udp:5404,udp:5405,tcp:8053,udp:8053,tcp:8444,tcp:10250,tcp:10255,udp:10255,tcp:24224,udp:24224 --source-tags {{ provision_prefix }} --target-tags {{ provision_prefix }}-master"
+  ['master-external']="--allow tcp:80,tcp:443,tcp:1936,tcp:8080,tcp:8443${range} --target-tags {{ provision_prefix }}-master"
+  ['node-internal']="--allow tcp:1935,udp:4789,tcp:10250,tcp:10255,udp:10255 --source-tags {{ provision_prefix }} --target-tags {{ provision_prefix }}-node,{{ provision_prefix }}-infra-node"
+  ['infra-node-internal']="--allow tcp:1935,tcp:5000 --source-tags {{ provision_prefix }} --target-tags {{ provision_prefix }}-infra-node"
+  ['infra-node-external']="--allow tcp:80,tcp:443,tcp:1936${range} --target-tags {{ provision_prefix }}-infra-node"
 )
 
 # Create firewall rules
@@ -137,7 +137,7 @@ do
       gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-m-${ITER_MASTER}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
         --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
-        --tags "{{ provision_prefix }}ocp,ocp,ocp-master{{ gce_extra_tags_master }}" \
+        --tags "{{ provision_prefix }},{{ provision_prefix }}-master{{ gce_extra_tags_master }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     else
@@ -165,7 +165,7 @@ do
       gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
         --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
-        --tags "{{ provision_prefix }}ocp,ocp,ocp-node{{ gce_extra_tags_node }}" \
+        --tags "{{ provision_prefix }},{{ provision_prefix }}-node{{ gce_extra_tags_node }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     else
@@ -193,7 +193,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
       gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_gpu | default(provision_gce_machine_type_node)}}" --network "{{ gce_network_name }}" \
         --zone "{{ gce_zone_name }}" --image "${image}-gpu" \
-        --tags "{{ provision_prefix }}ocp,ocp,ocp-node,ocp-node-gpu{{ gce_extra_tags_node }}" \
+        --tags "{{ provision_prefix }},{{ provision_prefix }}-node,{{ provision_prefix }}-node-gpu{{ gce_extra_tags_node }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_gpu_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata} \
         --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
@@ -223,7 +223,7 @@ do
       gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_infra }}" --network "{{ gce_network_name }}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
-        --tags "{{ provision_prefix }}ocp,ocp,ocp-infra-node{{ gce_extra_tags_node_infra }}" \
+        --tags "{{ provision_prefix }},{{ provision_prefix }}-infra-node{{ gce_extra_tags_node_infra }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
     else
@@ -253,7 +253,7 @@ function try_attach_disk() {
 
 # Attach additional disks to instances for docker storage
 # TODO: do we actually want multiple disks?make
-instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}ocp AND tags.items:ocp' --format='value(name)')
+instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}' --format='value(name)')
 for i in $instances; do
     (
     instance_zone=$(gcloud --project "{{ gce_project_id }}" compute instances list --regexp="${i}" --format='value(zone)')
@@ -296,8 +296,8 @@ fi
 # Master Certificate
 ( if ! gcloud --project "{{ gce_project_id }}" compute ssl-certificates describe "{{ provision_prefix }}master-ssl-lb-cert" &>/dev/null; then
     if [ -z "{{ provision_master_https_key_file }}" ] || [ -z "{{ provision_master_https_cert_file }}" ]; then
-        KEY='/tmp/ocp-ssl.key'
-        CERT='/tmp/ocp-ssl.crt'
+        KEY='/tmp/ssl.key'
+        CERT='/tmp/ssl.crt'
         openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -subj "/C=US/L=Raleigh/O={{ public_hosted_zone }}/CN={{ openshift_master_cluster_public_hostname }}" -keyout "$KEY" -out "$CERT"
     else
         KEY="{{ provision_master_https_key_file }}"
