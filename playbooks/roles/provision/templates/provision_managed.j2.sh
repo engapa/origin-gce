@@ -207,9 +207,9 @@ function try_attach_disk() {
         fi
         echo "${out}" 1>&2
         return 1
+    else
+      gcloud --project "{{ gce_project_id }}" compute instances set-disk-auto-delete "$1" --disk "$2" --zone "$3" --auto-delete
     fi
-    # TODO: identify whether we should turn on auto-delete
-    # gcloud --project "{{ gce_project_id }}" compute instances set-disk-auto-delete "$1" --disk "$2" --zone "$3" --auto-delete
 }
 
 # Attach additional disks to instances for docker storage
