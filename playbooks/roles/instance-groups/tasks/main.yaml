@@ -6,7 +6,7 @@
     openshift_node_labels:
       role: infra
       subrole: master
-  with_items: "{{ groups['tag_ocp-master'] }}"
+  with_items: "{{ groups['tag_%s-master' % provision_prefix] }}"
 
 - name: Add a master to the primary masters group
   add_host:
@@ -15,7 +15,7 @@
     openshift_node_labels:
       role: infra
       subrole: master
-  with_items: "{{ groups['tag_ocp-master'].0 }}"
+  with_items: "{{ groups['tag_%s-master' % provision_prefix].0 }}"
 
 - name: Add infra instances to host group
   add_host:
@@ -24,7 +24,7 @@
     openshift_node_labels:
       role: infra
       subrole: worker
-  with_items: "{{ groups['tag_ocp-infra-node'] | default([]) }}"
+  with_items: "{{ groups['tag_%s-infra-node' % provision_prefix] | default([]) }}"
 
 - name: Add app instances to host group
   add_host:
@@ -32,7 +32,7 @@
     groups: nodes, cluster_hosts, schedulable_nodes, app_nodes
     openshift_node_labels:
       role: app
-  with_items: "{{ groups['tag_ocp-node'] | default([])  }}"
+  with_items: "{{ groups['tag_%s-node' % provision_prefix] | default([])  }}"
 
 - name: Add app instances with gpu to host group
   add_host:
@@ -40,10 +40,4 @@
     groups: nodes, cluster_hosts, schedulable_nodes, app_nodes, app_nodes_gpu
     openshift_node_labels:
       role: app-gpu
-  with_items: "{{ groups['tag_ocp-node-gpu'] | default([])  }}"
-
-- name: New nodes
-  add_host:
-    name: "{{ item }}"
-    groups: nodes_to_add
-  with_items: "{{ groups['tag_ocp-node-to-add'] | default([])  }}"
+  with_items: "{{ groups['tag_%s-node-gpu' % provision_prefix] | default([])  }}"
