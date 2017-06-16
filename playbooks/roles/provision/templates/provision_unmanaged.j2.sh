@@ -142,7 +142,7 @@ do
     else
       echo "Instance '{{ provision_prefix }}-ig-m-${ITER_MASTER}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}-ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}" | awk '{print $1}' | grep "^{{ provision_prefix }}-ig-m-${ITER_MASTER}$" | wc -l) -eq '1' ] \
        || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-m" --instances "{{ provision_prefix }}-ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_MASTER=`expr $ITER_MASTER + 1`
@@ -170,7 +170,7 @@ do
     else
       echo "Instance '{{ provision_prefix }}-ig-n-${ITER_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n" --zone "{{ gce_zone_name }}" | awk '{print $1}' | grep "^{{ provision_prefix }}-ig-n-${ITER_NODE}$" | wc -l) -eq '1' ] \
        || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-n" --instances "{{ provision_prefix }}-ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_NODE=`expr $ITER_NODE + 1`
@@ -200,7 +200,7 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
     else
       echo "Instance '{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n-gpu" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" | wc -l) -eq '1' ] \
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n-gpu" --zone "{{ gce_zone_name }}" | awk '{print $1}' | grep "^{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}$" | wc -l) -eq '1' ] \
      || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-n-gpu" --instances "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
     ) &
     ITER_GPU_NODE=`expr $ITER_GPU_NODE + 1`
@@ -228,7 +228,7 @@ do
     else
       echo "Instance '{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}" | awk '{print $1}' | grep "^{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}$" | wc -l) -eq '1' ] \
        || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-i" --instances "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_INFRA_NODE=`expr $ITER_INFRA_NODE + 1`
