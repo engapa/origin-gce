@@ -89,107 +89,107 @@ declare -A FW_RULES=(
 
 # Create firewall rules
 for rule in "${!FW_RULES[@]}"; do
-    ( if ! gcloud --project "{{ gce_project_id }}" compute firewall-rules describe "{{ provision_prefix }}$rule" &>/dev/null; then
-        gcloud --project "{{ gce_project_id }}" compute firewall-rules create "{{ provision_prefix }}$rule" --network "{{ gce_network_name }}" ${FW_RULES[$rule]}
+    ( if ! gcloud --project "{{ gce_project_id }}" compute firewall-rules describe "{{ provision_prefix }}-$rule" &>/dev/null; then
+        gcloud --project "{{ gce_project_id }}" compute firewall-rules create "{{ provision_prefix }}-$rule" --network "{{ gce_network_name }}" ${FW_RULES[$rule]}
     else
-        echo "Firewall rule '{{ provision_prefix }}${rule}' already exists"
+        echo "Firewall rule '{{ provision_prefix }}-${rule}' already exists"
     fi ) &
 done
 
 # Master IP
-( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-ssl-lb-ip" --global &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}master-ssl-lb-ip" --global
+( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-ssl-lb-ip" --global &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}-master-ssl-lb-ip" --global
 else
-    echo "IP '{{ provision_prefix }}master-ssl-lb-ip' already exists"
+    echo "IP '{{ provision_prefix }}-master-ssl-lb-ip' already exists"
 fi ) &
 
 
 # Internal master IP
-( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-network-lb-ip" --region "{{ gce_region_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}master-network-lb-ip" --region "{{ gce_region_name }}"
+( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-network-lb-ip" --region "{{ gce_region_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}-master-network-lb-ip" --region "{{ gce_region_name }}"
 else
-    echo "IP '{{ provision_prefix }}master-network-lb-ip' already exists"
+    echo "IP '{{ provision_prefix }}-master-network-lb-ip' already exists"
 fi ) &
 
 # Router IP
-( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}router-network-lb-ip" --region "{{ gce_region_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}router-network-lb-ip" --region "{{ gce_region_name }}"
+( if ! gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-router-network-lb-ip" --region "{{ gce_region_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute addresses create "{{ provision_prefix }}-router-network-lb-ip" --region "{{ gce_region_name }}"
 else
-    echo "IP '{{ provision_prefix }}router-network-lb-ip' already exists"
+    echo "IP '{{ provision_prefix }}-router-network-lb-ip' already exists"
 fi ) &
 
 for i in `jobs -p`; do wait $i; done
 
 # Create Master instance unmanaged group
-if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}"
-    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged set-named-ports "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" --named-ports "{{ provision_prefix }}port-name-master:{{ internal_console_port }}"
+if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}"
+    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged set-named-ports "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}" --named-ports "{{ provision_prefix }}-port-name-master:{{ internal_console_port }}"
 else
-    echo "Instance group '{{ provision_prefix }}ig-m' already exists"
+    echo "Instance group '{{ provision_prefix }}-ig-m' already exists"
 fi
 
 ITER_MASTER=1
 while [ $ITER_MASTER -le "{{ provision_gce_instance_group_size_master | default(0) }}" ]
 do
   (
-    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-m-${ITER_MASTER}" &>/dev/null; then
-      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-m-${ITER_MASTER}" \
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}-ig-m-${ITER_MASTER}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}-ig-m-${ITER_MASTER}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
         --machine-type "{{ provision_gce_machine_type_master }}" --network "{{ gce_network_name }}" \
         --tags "{{ provision_prefix }},{{ provision_prefix }}-master{{ gce_extra_tags_master }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_master_boot_disk | default('35') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     else
-      echo "Instance '{{ provision_prefix }}ig-m-${ITER_MASTER}' already exists"
+      echo "Instance '{{ provision_prefix }}-ig-m-${ITER_MASTER}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
-       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-m" --instances "{{ provision_prefix }}ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}""{{ provision_prefix }}-ig-m-${ITER_MASTER}" | grep oso | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-m" --instances "{{ provision_prefix }}-ig-m-${ITER_MASTER}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_MASTER=`expr $ITER_MASTER + 1`
 done
 
 
 # Create node instance unmanaged group
-if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}"
+if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}-ig-n" --zone "{{ gce_zone_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}-ig-n" --zone "{{ gce_zone_name }}"
 else
-    echo "Instance group '{{ provision_prefix }}ig-n' already exists"
+    echo "Instance group '{{ provision_prefix }}-ig-n' already exists"
 fi
 
 ITER_NODE=1
 while [ $ITER_NODE -le "{{ provision_gce_instance_group_size_node | default(0) }}" ]
 do
   (
-    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
-      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-n-${ITER_NODE}" \
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}-ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}-ig-n-${ITER_NODE}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
         --machine-type "{{ provision_gce_machine_type_node }}" --network "{{ gce_network_name }}" \
         --tags "{{ provision_prefix }},{{ provision_prefix }}-node{{ gce_extra_tags_node }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-ro,compute-rw ${metadata}
     else
-      echo "Instance '{{ provision_prefix }}ig-n-${ITER_NODE}' already exists"
+      echo "Instance '{{ provision_prefix }}-ig-n-${ITER_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
-       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n" --instances "{{ provision_prefix }}ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-n-${ITER_NODE}" | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-n" --instances "{{ provision_prefix }}-ig-n-${ITER_NODE}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_NODE=`expr $ITER_NODE + 1`
 done
 
 # Create gpu node instance unmanaged group
 if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_instance_group_size_node_gpu }}" -ne '0' ]]; then
-  if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}"
+  if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}-ig-n-gpu" --zone "{{ gce_zone_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}-ig-n-gpu" --zone "{{ gce_zone_name }}"
   else
-    echo "Instance group '{{ provision_prefix }}ig-n-gpu' already exists"
+    echo "Instance group '{{ provision_prefix }}-ig-n-gpu' already exists"
   fi
 
   ITER_GPU_NODE=1
   while [ $ITER_GPU_NODE -le "{{ provision_gce_instance_group_size_node_gpu | default(0) }}" ]
   do
     (
-    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
-      gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" \
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" beta compute instances create "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_gpu | default(provision_gce_machine_type_node)}}" --network "{{ gce_network_name }}" \
         --zone "{{ gce_zone_name }}" --image "${image}-gpu" \
         --tags "{{ provision_prefix }},{{ provision_prefix }}-node,{{ provision_prefix }}-node-gpu{{ gce_extra_tags_node }}" \
@@ -198,38 +198,38 @@ if [[ "{{ provision_gce_instance_group_size_node_gpu }}" && "{{ provision_gce_in
         --accelerator type=nvidia-tesla-k80,count="{{ provision_gce_node_gpu_size | default('1') }}" \
         --maintenance-policy TERMINATE --restart-on-failure--machine-type
     else
-      echo "Instance '{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}' already exists"
+      echo "Instance '{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-n-gpu" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" | wc -l) -eq '1' ] \
-     || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-n-gpu" --instances "{{ provision_prefix }}ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-n-gpu" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" | wc -l) -eq '1' ] \
+     || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-n-gpu" --instances "{{ provision_prefix }}-ig-n-gpu-${ITER_GPU_NODE}" --zone "{{ gce_zone_name }}"
     ) &
     ITER_GPU_NODE=`expr $ITER_GPU_NODE + 1`
   done
 fi
 
 # Create infra node instance unmanaged group
-if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" &>/dev/null; then
-  gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}"
+if ! gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged describe "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}" &>/dev/null; then
+  gcloud --project "{{ gce_project_id }}" compute instance-groups unmanaged create "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}"
 else
-  echo "Instance group '{{ provision_prefix }}ig-i' already exists"
+  echo "Instance group '{{ provision_prefix }}-ig-i' already exists"
 fi
 
 ITER_INFRA_NODE=1
 while [ $ITER_INFRA_NODE -le "{{ provision_gce_instance_group_size_node_infra | default(0) }}" ]
 do
   (
-    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
-      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" \
+    if ! gcloud --project "{{ gce_project_id }}" compute instances describe "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}" &>/dev/null; then
+      gcloud --project "{{ gce_project_id }}" compute instances create "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" \
         --machine-type "{{ provision_gce_machine_type_node_infra }}" --network "{{ gce_network_name }}" \
         --zone "{{ gce_zone_name }}" --image "${image}" \
         --tags "{{ provision_prefix }},{{ provision_prefix }}-infra-node{{ gce_extra_tags_node_infra }}" \
         --boot-disk-size "{{ provision_gce_instance_group_size_node_infra_boot_disk | default('25') }}" --boot-disk-type "pd-ssd" \
         --scopes logging-write,monitoring-write,useraccounts-ro,service-control,service-management,storage-rw,compute-rw ${metadata}
     else
-      echo "Instance '{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}' already exists"
+      echo "Instance '{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}' already exists"
     fi
-    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
-       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}ig-i" --instances "{{ provision_prefix }}ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
+    [ $(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" | wc -l) -eq '1' ] \
+       || gcloud compute instance-groups unmanaged add-instances "{{ provision_prefix }}-ig-i" --instances "{{ provision_prefix }}-ig-i-${ITER_INFRA_NODE}" --zone "{{ gce_zone_name }}"
   ) &
   ITER_INFRA_NODE=`expr $ITER_INFRA_NODE + 1`
 done
@@ -278,23 +278,23 @@ for i in `jobs -p`; do wait $i; done
 
 # Master health check
 (
-if ! gcloud --project "{{ gce_project_id }}" compute health-checks describe "{{ provision_prefix }}master-ssl-lb-health-check" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute health-checks create https "{{ provision_prefix }}master-ssl-lb-health-check" --port "{{ internal_console_port }}" --request-path "/healthz"
+if ! gcloud --project "{{ gce_project_id }}" compute health-checks describe "{{ provision_prefix }}-master-ssl-lb-health-check" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute health-checks create https "{{ provision_prefix }}-master-ssl-lb-health-check" --port "{{ internal_console_port }}" --request-path "/healthz"
 else
-    echo "Health check '{{ provision_prefix }}master-ssl-lb-health-check' already exists"
+    echo "Health check '{{ provision_prefix }}-master-ssl-lb-health-check' already exists"
 fi
 
 # Master backend service
-if ! gcloud --project "{{ gce_project_id }}" compute backend-services describe "{{ provision_prefix }}master-ssl-lb-backend" --global &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute backend-services create "{{ provision_prefix }}master-ssl-lb-backend" --health-checks "{{ provision_prefix }}master-ssl-lb-health-check" --port-name "{{ provision_prefix }}-port-name-master" --protocol "SSL" --global --timeout="{{ provision_gce_master_https_timeout | default('2m') }}"
-    gcloud --project "{{ gce_project_id }}" compute backend-services add-backend "{{ provision_prefix }}master-ssl-lb-backend" --instance-group "{{ provision_prefix }}ig-m" --global --instance-group-zone "{{ gce_zone_name }}"
+if ! gcloud --project "{{ gce_project_id }}" compute backend-services describe "{{ provision_prefix }}-master-ssl-lb-backend" --global &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute backend-services create "{{ provision_prefix }}-master-ssl-lb-backend" --health-checks "{{ provision_prefix }}-master-ssl-lb-health-check" --port-name "{{ provision_prefix }}-port-name-master" --protocol "SSL" --global --timeout="{{ provision_gce_master_https_timeout | default('2m') }}"
+    gcloud --project "{{ gce_project_id }}" compute backend-services add-backend "{{ provision_prefix }}-master-ssl-lb-backend" --instance-group "{{ provision_prefix }}-ig-m" --global --instance-group-zone "{{ gce_zone_name }}"
 else
-    echo "Backend service '{{ provision_prefix }}master-ssl-lb-backend' already exists"
+    echo "Backend service '{{ provision_prefix }}-master-ssl-lb-backend' already exists"
 fi
 ) &
 
 # Master Certificate
-( if ! gcloud --project "{{ gce_project_id }}" compute ssl-certificates describe "{{ provision_prefix }}master-ssl-lb-cert" &>/dev/null; then
+( if ! gcloud --project "{{ gce_project_id }}" compute ssl-certificates describe "{{ provision_prefix }}-master-ssl-lb-cert" &>/dev/null; then
     if [ -z "{{ provision_master_https_key_file }}" ] || [ -z "{{ provision_master_https_cert_file }}" ]; then
         KEY='/tmp/ssl.key'
         CERT='/tmp/ssl.crt'
@@ -303,92 +303,92 @@ fi
         KEY="{{ provision_master_https_key_file }}"
         CERT="{{ provision_master_https_cert_file }}"
     fi
-    gcloud --project "{{ gce_project_id }}" compute ssl-certificates create "{{ provision_prefix }}master-ssl-lb-cert" --private-key "$KEY" --certificate "$CERT"
+    gcloud --project "{{ gce_project_id }}" compute ssl-certificates create "{{ provision_prefix }}-master-ssl-lb-cert" --private-key "$KEY" --certificate "$CERT"
     if [ -z "{{ provision_master_https_key_file }}" ] || [ -z "{{ provision_master_https_cert_file }}" ]; then
         rm -fv "$KEY" "$CERT"
     fi
 else
-    echo "Certificate '{{ provision_prefix }}master-ssl-lb-cert' already exists"
+    echo "Certificate '{{ provision_prefix }}-master-ssl-lb-cert' already exists"
 fi ) &
 
 for i in `jobs -p`; do wait $i; done
 
 (
 # Master ssl proxy target
-if ! gcloud --project "{{ gce_project_id }}" compute target-ssl-proxies describe "{{ provision_prefix }}master-ssl-lb-target" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute target-ssl-proxies create "{{ provision_prefix }}master-ssl-lb-target" --backend-service "{{ provision_prefix }}master-ssl-lb-backend" --ssl-certificate "{{ provision_prefix }}master-ssl-lb-cert"
+if ! gcloud --project "{{ gce_project_id }}" compute target-ssl-proxies describe "{{ provision_prefix }}-master-ssl-lb-target" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute target-ssl-proxies create "{{ provision_prefix }}-master-ssl-lb-target" --backend-service "{{ provision_prefix }}-master-ssl-lb-backend" --ssl-certificate "{{ provision_prefix }}-master-ssl-lb-cert"
 else
-    echo "Proxy target '{{ provision_prefix }}master-ssl-lb-target' already exists"
+    echo "Proxy target '{{ provision_prefix }}-master-ssl-lb-target' already exists"
 fi
 
 # Master forwarding rule
-if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}master-ssl-lb-rule" --global &>/dev/null; then
-    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-ssl-lb-ip" --global --format='value(address)')
-    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}master-ssl-lb-rule" --address "$IP" --global --ports "{{ console_port }}" --target-ssl-proxy "{{ provision_prefix }}master-ssl-lb-target"
+if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}-master-ssl-lb-rule" --global &>/dev/null; then
+    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-ssl-lb-ip" --global --format='value(address)')
+    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}-master-ssl-lb-rule" --address "$IP" --global --ports "{{ console_port }}" --target-ssl-proxy "{{ provision_prefix }}-master-ssl-lb-target"
 else
-    echo "Forwarding rule '{{ provision_prefix }}master-ssl-lb-rule' already exists"
+    echo "Forwarding rule '{{ provision_prefix }}-master-ssl-lb-rule' already exists"
 fi
 ) &
 
 (
 # Internal master health check
-if ! gcloud --project "{{ gce_project_id }}" compute http-health-checks describe "{{ provision_prefix }}master-network-lb-health-check" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute http-health-checks create "{{ provision_prefix }}master-network-lb-health-check" --port "8080" --request-path "/healthz"
+if ! gcloud --project "{{ gce_project_id }}" compute http-health-checks describe "{{ provision_prefix }}-master-network-lb-health-check" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute http-health-checks create "{{ provision_prefix }}-master-network-lb-health-check" --port "8080" --request-path "/healthz"
 else
-    echo "Health check '{{ provision_prefix }}master-network-lb-health-check' already exists"
+    echo "Health check '{{ provision_prefix }}-master-network-lb-health-check' already exists"
 fi
 
 # Internal master target pool
-if ! gcloud --project "{{ gce_project_id }}" compute target-pools describe "{{ provision_prefix }}master-network-lb-pool" --region "{{ gce_region_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute target-pools create "{{ provision_prefix }}master-network-lb-pool" --http-health-check "{{ provision_prefix }}master-network-lb-health-check" --region "{{ gce_region_name }}"
+if ! gcloud --project "{{ gce_project_id }}" compute target-pools describe "{{ provision_prefix }}-master-network-lb-pool" --region "{{ gce_region_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute target-pools create "{{ provision_prefix }}-master-network-lb-pool" --http-health-check "{{ provision_prefix }}-master-network-lb-health-check" --region "{{ gce_region_name }}"
 else
-    echo "Target pool '{{ provision_prefix }}master-network-lb-pool' already exists"
+    echo "Target pool '{{ provision_prefix }}-master-network-lb-pool' already exists"
 fi
 
 # Internal master forwarding rule
-if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}master-network-lb-rule" --region "{{ gce_region_name }}" &>/dev/null; then
-    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
-    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}master-network-lb-rule" --address "$IP" --region "{{ gce_region_name }}" --target-pool "{{ provision_prefix }}master-network-lb-pool"
+if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}-master-network-lb-rule" --region "{{ gce_region_name }}" &>/dev/null; then
+    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
+    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}-master-network-lb-rule" --address "$IP" --region "{{ gce_region_name }}" --target-pool "{{ provision_prefix }}-master-network-lb-pool"
 else
-    echo "Forwarding rule '{{ provision_prefix }}master-network-lb-rule' already exists"
+    echo "Forwarding rule '{{ provision_prefix }}-master-network-lb-rule' already exists"
 fi
 ) &
 
 (
 # Router health check
-if ! gcloud --project "{{ gce_project_id }}" compute http-health-checks describe "{{ provision_prefix }}router-network-lb-health-check" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute http-health-checks create "{{ provision_prefix }}router-network-lb-health-check" --port "1936" --request-path "/healthz"
+if ! gcloud --project "{{ gce_project_id }}" compute http-health-checks describe "{{ provision_prefix }}-router-network-lb-health-check" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute http-health-checks create "{{ provision_prefix }}-router-network-lb-health-check" --port "1936" --request-path "/healthz"
 else
-    echo "Health check '{{ provision_prefix }}router-network-lb-health-check' already exists"
+    echo "Health check '{{ provision_prefix }}-router-network-lb-health-check' already exists"
 fi
 
 # Router target pool
-if ! gcloud --project "{{ gce_project_id }}" compute target-pools describe "{{ provision_prefix }}router-network-lb-pool" --region "{{ gce_region_name }}" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute target-pools create "{{ provision_prefix }}router-network-lb-pool" --http-health-check "{{ provision_prefix }}router-network-lb-health-check" --region "{{ gce_region_name }}"
+if ! gcloud --project "{{ gce_project_id }}" compute target-pools describe "{{ provision_prefix }}-router-network-lb-pool" --region "{{ gce_region_name }}" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute target-pools create "{{ provision_prefix }}-router-network-lb-pool" --http-health-check "{{ provision_prefix }}-router-network-lb-health-check" --region "{{ gce_region_name }}"
 else
-    echo "Target pool '{{ provision_prefix }}router-network-lb-pool' already exists"
+    echo "Target pool '{{ provision_prefix }}-router-network-lb-pool' already exists"
 fi
 
 # Router forwarding rule
-if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}router-network-lb-rule" --region "{{ gce_region_name }}" &>/dev/null; then
-    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}router-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
-    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}router-network-lb-rule" --address "$IP" --region "{{ gce_region_name }}" --target-pool "{{ provision_prefix }}router-network-lb-pool"
+if ! gcloud --project "{{ gce_project_id }}" compute forwarding-rules describe "{{ provision_prefix }}-router-network-lb-rule" --region "{{ gce_region_name }}" &>/dev/null; then
+    IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-router-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
+    gcloud --project "{{ gce_project_id }}" compute forwarding-rules create "{{ provision_prefix }}-router-network-lb-rule" --address "$IP" --region "{{ gce_region_name }}" --target-pool "{{ provision_prefix }}-router-network-lb-pool"
 else
-    echo "Forwarding rule '{{ provision_prefix }}router-network-lb-rule' already exists"
+    echo "Forwarding rule '{{ provision_prefix }}-router-network-lb-rule' already exists"
 fi
 ) &
 
 for i in `jobs -p`; do wait $i; done
 
 # set the target pools
-master_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-m" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-m-*" | awk '{print $1}')
+master_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-m" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-m-*" | awk '{print $1}')
 if [[ "ig-m" == "{{ provision_gce_router_network_instance_group }}" ]]; then
-  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
-  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}router-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}-master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}-router-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
 else
-  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
-  infra_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}ig-i-*" | awk '{print $1}')
-  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}router-network-lb-pool" --instances=$(echo -n $infra_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}-master-network-lb-pool" --instances=$(echo -n $master_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
+  infra_instances=$(gcloud compute instance-groups unmanaged list-instances "{{ provision_prefix }}-ig-i" --zone "{{ gce_zone_name }}" | grep "{{ provision_prefix }}-ig-i-*" | awk '{print $1}')
+  gcloud --project "{{ gce_project_id }}" compute target-pools add-instances "{{ provision_prefix }}-router-network-lb-pool" --instances=$(echo -n $infra_instances | tr ' ' ',') --instances-zone "{{ gce_zone_name }}" --zone "{{ gce_zone_name }}"
 fi
 
 # Retry DNS changes until they succeed since this may be a shared resource
@@ -398,7 +398,7 @@ while true; do
 
     # DNS record for master lb
     if ! gcloud --project "{{ gce_project_id }}" dns record-sets list -z "${dns_zone}" --name "{{ openshift_master_cluster_public_hostname }}" 2>/dev/null | grep -q "{{ openshift_master_cluster_public_hostname }}"; then
-        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-ssl-lb-ip" --global --format='value(address)')
+        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-ssl-lb-ip" --global --format='value(address)')
         if [[ ! -f $dns ]]; then
             gcloud --project "{{ gce_project_id }}" dns record-sets transaction --transaction-file=$dns start -z "${dns_zone}"
         fi
@@ -409,7 +409,7 @@ while true; do
 
     # DNS record for internal master lb
     if ! gcloud --project "{{ gce_project_id }}" dns record-sets list -z "${dns_zone}" --name "{{ openshift_master_cluster_hostname }}" 2>/dev/null | grep -q "{{ openshift_master_cluster_hostname }}"; then
-        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}master-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
+        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-master-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
         if [[ ! -f $dns ]]; then
             gcloud --project "{{ gce_project_id }}" dns record-sets transaction --transaction-file=$dns start -z "${dns_zone}"
         fi
@@ -420,7 +420,7 @@ while true; do
 
     # DNS record for router lb
     if ! gcloud --project "{{ gce_project_id }}" dns record-sets list -z "${dns_zone}" --name "{{ wildcard_zone }}" 2>/dev/null | grep -q "{{ wildcard_zone }}"; then
-        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}router-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
+        IP=$(gcloud --project "{{ gce_project_id }}" compute addresses describe "{{ provision_prefix }}-router-network-lb-ip" --region "{{ gce_region_name }}" --format='value(address)')
         if [[ ! -f $dns ]]; then
             gcloud --project "{{ gce_project_id }}" dns record-sets transaction --transaction-file=$dns start -z "${dns_zone}"
         fi
@@ -456,7 +456,7 @@ for i in `jobs -p`; do wait $i; done
 # Wait for any remaining disks to be attached
 done=
 for i in `seq 1 60`; do
-    if [[ -z "$( gcloud --project "{{ gce_project_id }}" compute operations list --zones "{{ gce_zone_name }}" --filter 'operationType=attachDisk AND NOT status=DONE AND targetLink : "{{ provision_prefix }}ig-"' --page-size=10 --format 'value(targetLink)' --limit 1 )" ]]; then
+    if [[ -z "$( gcloud --project "{{ gce_project_id }}" compute operations list --zones "{{ gce_zone_name }}" --filter 'operationType=attachDisk AND NOT status=DONE AND targetLink : "{{ provision_prefix }}-ig-"' --page-size=10 --format 'value(targetLink)' --limit 1 )" ]]; then
         done=1
         break
     fi

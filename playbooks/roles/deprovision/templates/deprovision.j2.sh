@@ -62,43 +62,43 @@ fi
 
 # Preemptively spin down the instances
 (
-if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}ig-m" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}ig-m" --size=0 --zone "{{ gce_zone_name }}"
+if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}-ig-m" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}-ig-m" --size=0 --zone "{{ gce_zone_name }}"
 fi
 ) &
 (
-if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}ig-i" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}ig-i" --size=0 --zone "{{ gce_zone_name }}"
+if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}-ig-i" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}-ig-i" --size=0 --zone "{{ gce_zone_name }}"
 fi
 ) &
 (
-if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}ig-n" &>/dev/null; then
-    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}ig-n" --size=0 --zone "{{ gce_zone_name }}"
+if gcloud --project "{{ gce_project_id }}" compute instance-groups managed describe "{{ provision_prefix }}-ig-n" &>/dev/null; then
+    gcloud --project "{{ gce_project_id }}" compute instance-groups managed resize "{{ provision_prefix }}-ig-n" --size=0 --zone "{{ gce_zone_name }}"
 fi
 ) &
 
 (
 # Router network rules
-teardown "{{ provision_prefix }}router-network-lb-rule" compute forwarding-rules --region "{{ gce_region_name }}"
-teardown "{{ provision_prefix }}router-network-lb-pool" compute target-pools --region "{{ gce_region_name }}"
-teardown "{{ provision_prefix }}router-network-lb-health-check" compute http-health-checks
-teardown "{{ provision_prefix }}router-network-lb-ip" compute addresses --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-router-network-lb-rule" compute forwarding-rules --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-router-network-lb-pool" compute target-pools --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-router-network-lb-health-check" compute http-health-checks
+teardown "{{ provision_prefix }}-router-network-lb-ip" compute addresses --region "{{ gce_region_name }}"
 
 # Internal master network rules
-teardown "{{ provision_prefix }}master-network-lb-rule" compute forwarding-rules --region "{{ gce_region_name }}"
-teardown "{{ provision_prefix }}master-network-lb-pool" compute target-pools --region "{{ gce_region_name }}"
-teardown "{{ provision_prefix }}master-network-lb-health-check" compute http-health-checks
-teardown "{{ provision_prefix }}master-network-lb-ip" compute addresses --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-master-network-lb-rule" compute forwarding-rules --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-master-network-lb-pool" compute target-pools --region "{{ gce_region_name }}"
+teardown "{{ provision_prefix }}-master-network-lb-health-check" compute http-health-checks
+teardown "{{ provision_prefix }}-master-network-lb-ip" compute addresses --region "{{ gce_region_name }}"
 ) &
 
 (
 # Master SSL network rules
-teardown "{{ provision_prefix }}master-ssl-lb-rule" compute forwarding-rules --global
-teardown "{{ provision_prefix }}master-ssl-lb-target" compute target-ssl-proxies
-teardown "{{ provision_prefix }}master-ssl-lb-cert" compute ssl-certificates
-teardown "{{ provision_prefix }}master-ssl-lb-ip" compute addresses --global
-teardown "{{ provision_prefix }}master-ssl-lb-backend" compute backend-services --global
-teardown "{{ provision_prefix }}master-ssl-lb-health-check" compute health-checks
+teardown "{{ provision_prefix }}-master-ssl-lb-rule" compute forwarding-rules --global
+teardown "{{ provision_prefix }}-master-ssl-lb-target" compute target-ssl-proxies
+teardown "{{ provision_prefix }}-master-ssl-lb-cert" compute ssl-certificates
+teardown "{{ provision_prefix }}-master-ssl-lb-ip" compute addresses --global
+teardown "{{ provision_prefix }}-master-ssl-lb-backend" compute backend-services --global
+teardown "{{ provision_prefix }}-master-ssl-lb-health-check" compute health-checks
 ) &
 
 # Additional disks for instances for docker storage
@@ -126,7 +126,7 @@ for i in `jobs -p`; do wait $i; done
 # Wait for any remaining disks to be detached
 done=
 for i in `seq 1 60`; do
-    if [[ -z "$( gcloud --project "{{ gce_project_id }}" compute operations list --zones "{{ gce_zone_name }}" --filter 'operationType=detachDisk AND NOT status=DONE AND targetLink : "{{ provision_prefix }}ig-"' --page-size=10 --format 'value(targetLink)' --limit 1 )" ]]; then
+    if [[ -z "$( gcloud --project "{{ gce_project_id }}" compute operations list --zones "{{ gce_zone_name }}" --filter 'operationType=detachDisk AND NOT status=DONE AND targetLink : "{{ provision_prefix }}-ig-"' --page-size=10 --format 'value(targetLink)' --limit 1 )" ]]; then
         done=1
         break
     fi
@@ -147,21 +147,21 @@ for i in $instances; do
 done
 
 # Instance groups
-( teardown "{{ provision_prefix }}ig-m" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
-( teardown "{{ provision_prefix }}ig-n" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
-( teardown "{{ provision_prefix }}ig-i" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
+( teardown "{{ provision_prefix }}-ig-m" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
+( teardown "{{ provision_prefix }}-ig-n" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
+( teardown "{{ provision_prefix }}-ig-i" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
 
 # Instance with GPUs
-( teardown "{{ provision_prefix }}ig-n-gpu" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
+( teardown "{{ provision_prefix }}-ig-n-gpu" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
 
 
 for i in `jobs -p`; do wait $i; done
 
 # Instance templates
-( teardown "{{ provision_prefix }}instance-template-master" compute instance-templates ) &
-( teardown "{{ provision_prefix }}instance-template-node" compute instance-templates ) &
-( teardown "{{ provision_prefix }}instance-template-node-infra" compute instance-templates ) &
-( teardown "{{ provision_prefix }}instance-template-node-gpu" compute instance-templates ) &
+( teardown "{{ provision_prefix }}-instance-template-master" compute instance-templates ) &
+( teardown "{{ provision_prefix }}-instance-template-node" compute instance-templates ) &
+( teardown "{{ provision_prefix }}-instance-template-node-infra" compute instance-templates ) &
+( teardown "{{ provision_prefix }}-instance-template-node-gpu" compute instance-templates ) &
 
 # Firewall rules
 # ['name']='parameters for "gcloud compute firewall-rules create"'
@@ -177,8 +177,8 @@ declare -A FW_RULES=(
   ['infra-node-external']=""
 )
 for rule in "${!FW_RULES[@]}"; do
-    ( if gcloud --project "{{ gce_project_id }}" compute firewall-rules describe "{{ provision_prefix }}$rule" &>/dev/null; then
-        gcloud -q --project "{{ gce_project_id }}" compute firewall-rules delete "{{ provision_prefix }}$rule"
+    ( if gcloud --project "{{ gce_project_id }}" compute firewall-rules describe "{{ provision_prefix }}-$rule" &>/dev/null; then
+        gcloud -q --project "{{ gce_project_id }}" compute firewall-rules delete "{{ provision_prefix }}-$rule"
     fi ) &
 done
 
