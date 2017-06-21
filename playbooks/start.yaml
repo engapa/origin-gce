@@ -1,0 +1,20 @@
+# This playbook starts all instances if instances groups are unmanaged
+
+- name: Start all instances
+  hosts: localhost
+  connection: local
+  gather_facts: no
+  tasks:
+  - name:
+    fail:
+      msg: No unmanaged instance groups support this option
+    when: provision_gce_ig_type != 'unmanaged'
+  - name: Getting all instances
+    shell: gcloud --project {{ gce_project_id }} compute instances list --filter='tags.items:{{ provision_prefix }}' --format='value(name)'
+    when: provision_gce_ig_type == 'unmanaged'
+    register: instances
+  - name: Starting instances ...
+    shell: gcloud compute instances start {{ item }} --zone {{ gce_zone_name }}
+    with_items: "{{ instances.stdout_lines | default([]) }}"
+    async: 45
+    poll: 0
