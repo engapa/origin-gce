@@ -49,6 +49,9 @@ openshift_master_identity_providers:
   kind: HTPasswdPasswordIdentityProvider
   filename: /etc/openshift/openshift-passwd
 
+# Token max seconds, this value means a year, default value should be a day (86400)
+#openshift_master_access_token_max_seconds=31536000
+
 # Cluster role binding
 provision_cluster_role_binding_mappings:
 - group: 'system:authenticated:oauth'
