@@ -5,7 +5,7 @@
 - name: Templatize provision script
   template: src=provision_{{ provision_gce_ig_type }}.j2.sh dest=/tmp/provision.sh mode=u+rx
 
-- name: Provision GCE DNS domain
+- name: Provision DNS domain
   command: /tmp/dns.sh
   args:
     chdir: "{{ playbook_dir }}/files"
@@ -17,7 +17,7 @@
     - "lookup('dig', public_hosted_zone, 'qtype=NS', wantlist=True) | sort | join(',') == dns_provision.stdout"
     msg: "The DNS domain {{ public_hosted_zone }} defined in 'public_hosted_zone' must have NS records pointing to the Google nameservers: '{{ dns_provision.stdout }}' instead of '{{ lookup('dig', public_hosted_zone, 'qtype=NS') }}'."
 
-- name: Provision GCE resources
+- name: Provision GCP resources
   command: /tmp/provision.sh
   args:
     chdir: "{{ playbook_dir }}/files"

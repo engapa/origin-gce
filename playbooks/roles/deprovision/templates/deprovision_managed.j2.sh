@@ -137,15 +137,6 @@ if [[ -z "${done}" ]]; then
     exit 1
 fi
 
-# Delete the disks in parallel with instance operations. Ignore failures to avoid preventing other expensive resources from
-# being removed.
-instances=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter='tags.items:{{ provision_prefix }}' --format='value(name)')
-for i in $instances; do
-    instance_zone=$(gcloud --project "{{ gce_project_id }}" compute instances list --filter="name:${i}" --format='value(zone)')
-    ( gcloud -q --project "{{ gce_project_id }}" compute disks delete "${i}-docker" --zone "$instance_zone" || true ) &
-    ( gcloud -q --project "{{ gce_project_id }}" compute disks delete "${i}-openshift" --zone "$instance_zone" || true ) &
-done
-
 # Instance groups
 ( teardown "{{ provision_prefix }}-ig-m" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &
 ( teardown "{{ provision_prefix }}-ig-n" compute instance-groups managed --zone "{{ gce_zone_name }}" ) &

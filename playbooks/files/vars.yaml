@@ -128,7 +128,7 @@ inventory_ip_type: external
 
 # Extra tags to add to each instance template, must start with a comma
 gce_extra_tags_master: ",preserve"
-gce_extra_tags_node: ",preserve"
+gce_extra_tags_node: ",preserve,standby"
 gce_extra_tags_node_infra: ",preserve"
 
 # The sizes of instances to create
@@ -201,3 +201,5 @@ openshift_master_oauth_templates:
   login: '/usr/share/origin/login.html'
   providerSelection: '/usr/share/origin/providerSelection.html'
 login_background_image: "../console/extensions/images/back_image.jpg"
+
+change_status_tags: standby
