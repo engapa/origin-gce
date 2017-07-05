@@ -1,12 +1,16 @@
 ---
 - name: Add privileged scc to user
-  shell: oc adm policy add-scc-to-user privileged '{{ item }}'
+  shell: oc adm policy add-scc-to-user {{ item.1 }} '{{ item.0 }}'
   ignore_errors: true
-  with_items:
-  - "{{ provision_scc_mapping.privileged | default([]) }}"
+  with_nested:
+  - "{{ provision_scc_mapping.users | default([]) }}"
+  - "{{ provision_scc_mapping.scc | default([]) }}"
+  when: provision_scc_mapping is defined and provision_scc_mapping.users is defined and provision_scc_mapping.scc is defined
 
-- name: Add restricted scc to user
-  shell: oc adm policy add-scc-to-user restricted '{{ item }}'
+- name: Add/remove scc to group
+  shell: oc adm policy add-scc-to-group {{ item.1 }} '{{ item.0 }}'
   ignore_errors: true
-  with_items:
-  - "{{ provision_scc_mapping.restricted | default([]) }}"
+  with_nested:
+  - "{{ provision_scc_mapping.groups | default([]) }}"
+  - "{{ provision_scc_mapping.scc | default([]) }}"
+  when: provision_scc_mapping is defined and provision_scc_mapping.groups is defined and provision_scc_mapping.scc is defined
